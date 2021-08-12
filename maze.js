@@ -1,4 +1,12 @@
 let currentNode;
+const primaryGradient = (canvas, width, height) => {
+	let gradient = canvas.createLinearGradient(0, 0, width, height);
+	gradient.addColorStop(0, "#0E0E52"); // midnight blue
+	gradient.addColorStop(0.5, "#FFB8D1"); // cotton candy
+	gradient.addColorStop(1, "#F2433"); // cinnabar
+	//Gold Crayola: #edcb96
+	return gradient;
+};
 
 export default class Maze {
 	constructor(x, y, rows, columns) {
@@ -71,7 +79,7 @@ class Cell {
 	show(width, height, rows, columns) {
 		let x = (this.mazeColumns * width) / columns;
 		let y = (this.mazeRows * height) / rows;
-		ctx.strokeStyle = "navajowhite";
+		ctx.strokeStyle = primaryGradient;
 		ctx.fillstyle = "black";
 		ctx.fillRect(0, 0, this.mazeWidth, this.mazeHeight);
 		ctx.lineWidth = 2;
