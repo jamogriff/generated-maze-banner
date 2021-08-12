@@ -14,13 +14,8 @@ export default class Maze {
 		for (let row = 0; row < this.rows; row++) {
 			let row = [];
 			for (let column = 0; column < this.columns; column++) {
-				let cell = new Cell(
-					this.width,
-					this.height,
-					this.grid,
-					row,
-					column
-				);
+				// instantiate with reference to maze object
+				let cell = new Cell(this);
 				row.push(cell);
 			}
 			this.grid.push(row);
@@ -29,11 +24,15 @@ export default class Maze {
 	}
 }
 
+// Probably a big LoD violation in terms of instantiating a Cell
+// with it's parent, but there's crossover on all of its properties
 class Cell {
-	constructor(parentX, parentY, parentGrid, rowNum, colNum) {
-		this.parentWidth = parentX;
-		this.parentHeight = parentY;
-		this.parentGrid = parentGrid;
+	constructor(parent) {
+		this.mazeWidth = parent.width;
+		this.mazeHeight = parent.height;
+		this.mazeGrid = parent.grid;
+		this.mazeRows = parent.rows;
+		this.mazeColumns = parent.columns;
 		this.visited = false;
 		this.walls = {
 			topWall: true,
@@ -41,5 +40,40 @@ class Cell {
 			rightWall: true,
 			leftWall: true,
 		};
+	}
+
+	// Wall drawing functions for each cell. Will be called if relevent wall is set to true in cell constructor
+	drawTopWall(x, y, width, columns) {
+		ctx.beginPath();
+		ctx.moveTo(x, y);
+		ctx.lineTo(x + width / columns, y);
+		ctx.stroke();
+	}
+	drawBottomWall(x, y, width, columns, rows) {
+		ctx.beginPath();
+		ctx.moveTo(x, y + height / rows);
+		ctx.lineTo(x + width / columns, y + height / rows);
+		ctx.stroke();
+	}
+	drawRightWall(x, y, width, height, columns, rows) {
+		ctx.beginPath();
+		ctx.moveTo(x + width / columns, y);
+		ctx.lineTo(x + width / columns, y + height / rows);
+		ctx.stroke();
+	}
+	drawLeftWall(x, y, height, rows) {
+		ctx.beginPath();
+		ctx.moveTo(x, y);
+		ctx.lineTo(x, y + height / rows);
+		ctx.stroke();
+	}
+
+	show(width, height, rows, columns) {
+		let x = (this.mazeColumns * width) / columns;
+		let y = (this.mazeRows * height) / rows;
+		ctx.strokeStyle = "navajowhite";
+		ctx.fillstyle = "black";
+		ctx.fillRect(0, 0, this.mazeWidth, this.mazeHeight);
+		ctx.lineWidth = 2;
 	}
 }
