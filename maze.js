@@ -1,3 +1,7 @@
+import WallHelpers from "./wall-helpers.js";
+
+const banner = document.querySelector("#banner");
+const ctx = banner.getContext("2d");
 let currentNode;
 const primaryGradient = (canvas, width, height) => {
 	let gradient = canvas.createLinearGradient(0, 0, width, height);
@@ -50,32 +54,6 @@ class Cell {
 		};
 	}
 
-	// Wall drawing functions for each cell. Will be called if relevent wall is set to true in cell constructor
-	drawTopWall(x, y, width, columns) {
-		ctx.beginPath();
-		ctx.moveTo(x, y);
-		ctx.lineTo(x + width / columns, y);
-		ctx.stroke();
-	}
-	drawBottomWall(x, y, width, columns, rows) {
-		ctx.beginPath();
-		ctx.moveTo(x, y + height / rows);
-		ctx.lineTo(x + width / columns, y + height / rows);
-		ctx.stroke();
-	}
-	drawRightWall(x, y, width, height, columns, rows) {
-		ctx.beginPath();
-		ctx.moveTo(x + width / columns, y);
-		ctx.lineTo(x + width / columns, y + height / rows);
-		ctx.stroke();
-	}
-	drawLeftWall(x, y, height, rows) {
-		ctx.beginPath();
-		ctx.moveTo(x, y);
-		ctx.lineTo(x, y + height / rows);
-		ctx.stroke();
-	}
-
 	show(width, height, rows, columns) {
 		let x = (this.mazeColumns * width) / columns;
 		let y = (this.mazeRows * height) / rows;
@@ -83,5 +61,27 @@ class Cell {
 		ctx.fillstyle = "black";
 		ctx.fillRect(0, 0, this.mazeWidth, this.mazeHeight);
 		ctx.lineWidth = 2;
+		this.renderWalls(x, y, width, height, rows, columns);
+		// TODO: Add visited check here
+	}
+
+	// Sorry for one letter params, but these get repeated a lot
+	// Walls get either shown or hidden depending on boolean
+	renderWalls(x, y, w, h, r, c) {
+		this.walls.topWall
+			? showTopWall(x, y, w, c)
+			: hideTopWall(x, y, w, c);
+
+		this.walls.bottomWall
+			? showBottomWall(x, y, w, r, c)
+			: hideBottomWall(x, y, w, r, c);
+
+		this.walls.rightWall
+			? showRightWall(x, y, w, h, r, c)
+			: hideRightWall(x, y, w, h, r, c);
+
+		this.walls.leftWall
+			? showLeftWall(x, y, h, r)
+			: hideLeftWall(x, y, h, r);
 	}
 }
