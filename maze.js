@@ -22,6 +22,7 @@ export default class Maze {
 	}
 
 	initialize() {
+		// Results in 2D array where grid.length = # rows and grid[0].length = # of columns
 		for (let row = 0; row < this.rows; row++) {
 			let row = [];
 			for (let column = 0; column < this.columns; column++) {
@@ -83,7 +84,7 @@ class Cell {
 		canvas.fillstyle = "black";
 		canvas.fillRect(0, 0, this.mazeWidth, this.mazeHeight);
 		canvas.lineWidth = 2;
-		WallRenderer.draw(this.walls, x, y, width, height, rows, columns);
+		this.renderWalls(x, y, width, height, rows, columns);
 
 		// probably should call this a separate function for clarity
 		if (this.visited) {
@@ -95,35 +96,74 @@ class Cell {
 			);
 		}
 	}
+
+	// Sorry for one letter params, but these get repeated a lot
+	// Walls get either shown or hidden depending on boolean
+	renderWalls(x, y, w, h, r, c) {
+		this.walls.topWall
+			? WallRenderer.showTopWall(x, y, w, c)
+			: WallRenderer.hideTopWall(x, y, w, c);
+
+		this.walls.bottomWall
+			? WallRenderer.showBottomWall(x, y, w, r, c)
+			: WallRenderer.hideBottomWall(x, y, w, r, c);
+
+		this.walls.rightWall
+			? WallRenderer.showRightWall(x, y, w, h, r, c)
+			: WallRenderer.hideRightWall(x, y, w, h, r, c);
+
+		this.walls.leftWall
+			? WallRenderer.showLeftWall(x, y, h, r)
+			: WallRenderer.hideLeftWall(x, y, h, r);
+	}
+
+	checkNeighbors() {
+		let grid = this.mazeGrid;
+		let row = this.mazeRows;
+		let column = this.mazeColumns;
+		let neighbors = [];
+
+		// Setting the neighbors of a cell, accounting for cells on outside border
+		let topNeighbor = row !== 0 ? grid[row - 1][column] : undefined;
+		let bottomNeighbor =
+			row !== grid.length - 1
+				? grid[row + 1][column]
+				: undefined;
+		let rightNeighbor =
+			column !== grid[0].length - 1
+				? grid[row][column + 1]
+				: undefined;
+		let leftNeighbor =
+			column !== 0 ? grid[row][column - 1] : undefined;
+	}
 }
 
+// A massive amount of work is done on the maze to handle
+// drawing/hiding walls, therefore this separate class
+// is used to put that chunk of functionality
 class WallRenderer {
-	// A massive amount of work is done on the maze to handle
-	// drawing/hiding walls, therefore this separate class
-	// is used to put that chunk of functionality
-	// NOTE: may need a reference to canvas...
 	// Wall drawing functions for each cell marked as 'true'
-	showTopWall(x, y, width, columns) {
+	static showTopWall(x, y, width, columns) {
 		canvas.beginPath();
 		canvas.moveTo(x, y);
 		canvas.lineTo(x + width / columns, y);
 		canvas.stroke();
 	}
-	showBottomWall(x, y, width, rows, columns) {
+	static showBottomWall(x, y, width, height, rows, columns) {
 		canvas.beginPath();
 		canvas.moveTo(x, y + height / rows);
 		canvas.lineTo(x + width / columns, y + height / rows);
 		canvas.stroke();
 	}
 
-	showRightWall(x, y, width, height, rows, columns) {
+	static showRightWall(x, y, width, height, rows, columns) {
 		canvas.beginPath();
 		canvas.moveTo(x + width / columns, y);
 		canvas.lineTo(x + width / columns, y + height / rows);
 		canvas.stroke();
 	}
 
-	showLeftWall(x, y, height, rows) {
+	static showLeftWall(x, y, height, rows) {
 		canvas.beginPath();
 		canvas.moveTo(x, y);
 		canvas.lineTo(x, y + height / rows);
@@ -133,7 +173,7 @@ class WallRenderer {
 	// Wall hiding functions that are used on cells marked 'false'
 	// Used due to using fillRect for maze bg, instead of CSS bg
 	// NOTE: moveTo and lineTo are truncated so surrounding walls don't get cut into
-	hideTopWall(x, y, width, columns) {
+	static hideTopWall(x, y, width, columns) {
 		canvas.beginPath();
 		canvas.strokeStyle = "black";
 		canvas.moveTo(x + 1, y);
@@ -141,15 +181,15 @@ class WallRenderer {
 		canvas.stroke();
 	}
 
-	hideBottomPath(x, y, width, rows, columns) {
+	static hideBottomPath(x, y, width, height, rows, columns) {
 		canvas.beginPath();
 		canvas.strokeStyle = "black";
-		canvas.moveTo(x + 1, y + width / rows);
-		canvas.lineTo(x + width / columns - 1, y + width / rows);
+		canvas.moveTo(x + 1, y + height / rows);
+		canvas.lineTo(x + width / columns - 1, y + height / rows);
 		canvas.stroke();
 	}
 
-	hideRightPath(x, y, width, rows, columns) {
+	static hideRightPath(x, y, width, rows, columns) {
 		canvas.beginPath();
 		canvas.strokeStyle = "black";
 		canvas.moveTo(x + width / columns, y + 1);
@@ -157,30 +197,11 @@ class WallRenderer {
 		canvas.stroke();
 	}
 
-	hideLeftPath(x, y, height, rows) {
+	static hideLeftPath(x, y, height, rows) {
 		canvas.beginPath();
 		canvas.strokeStyle = "black";
 		canvas.moveTo(x, y + 1);
 		canvas.lineTo(x, y + height / rows - 1);
 		canvas.stroke();
-	}
-	// Sorry for one letter params, but these get repeated a lot
-	// Walls get either shown or hidden depending on boolean
-	static draw(walls, x, y, w, h, r, c) {
-		walls.topWall
-			? this.showTopWall(x, y, w, c)
-			: this.hideTopWall(x, y, w, c);
-
-		walls.bottomWall
-			? this.showBottomWall(x, y, w, r, c)
-			: this.hideBottomWall(x, y, w, r, c);
-
-		walls.rightWall
-			? this.showRightWall(x, y, w, h, r, c)
-			: this.hideRightWall(x, y, w, h, r, c);
-
-		walls.leftWall
-			? this.showLeftWall(x, y, h, r)
-			: this.hideLeftWall(x, y, h, r);
 	}
 }
