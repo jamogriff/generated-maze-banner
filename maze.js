@@ -102,6 +102,31 @@ class Cell {
 		}
 	}
 
+	// Logically removes walls, but doesn't render this change
+	removeWalls(cell1, cell2) {
+		// compares two neighboring cells on x-axis and y-axis respectively to determine relative location
+		let x = cell1.params.column - cell2.params.column
+		let y = cell1.params.row - cell2.params.row
+
+		// Since two neighboring cells have overlapping walls, two walls must be turned off at the same time
+		if (x === -1) {
+			cell1.params.walls.rightWall = false;
+			cell2.params.walls.leftWall = false;
+		} else if (x === 1) {
+			cell1.params.walls.leftWall = false;
+			cell2.params.walls.rightWall = false;
+		}
+
+		// Same concept for y-axis
+		if (y === -1) {
+			cell1.params.walls.bottomWall = false;
+			cell2.params.walls.topWall = false;
+		} else if (y === 1) {
+			cell1.params.walls.topWall = false;
+			cell2.params.walls.bottomWall = false;
+		}
+	}
+
 	// Sorry for one letter params, but these get repeated a lot
 	// Walls get either shown or hidden depending on boolean
 	renderWalls(x, y, w, h, r, c) {
