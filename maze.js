@@ -60,23 +60,28 @@ export default class Maze {
 // with it's parent, but there's crossover on all of its properties
 class Cell {
 	constructor(parent) {
+		// a Cell needs to know about the size of the canvas for rendering
+		// as well as the grid, to check it's neighbors
 		this.mazeWidth = parent.width;
 		this.mazeHeight = parent.height;
 		this.mazeGrid = parent.grid;
-		this.mazeRows = parent.rows;
-		this.mazeColumns = parent.columns;
-		this.visited = false;
-		this.walls = {
-			topWall: true,
-			bottomWall: true,
-			rightWall: true,
-			leftWall: true,
+		// the following are params specific to each cell
+		this.params = {
+			row: parent.rows,
+			column: parent.columns,
+			visited: false,
+			walls: {
+				topWall: true,
+				bottomWall: true,
+				rightWall: true,
+				leftWall: true,
+			},
 		};
 	}
 
 	show(width, height, rows, columns) {
-		let x = (this.mazeColumns * width) / columns;
-		let y = (this.mazeRows * height) / rows;
+		let x = (this.params.row * width) / columns;
+		let y = (this.params.column * height) / rows;
 		canvas.strokeStyle = primaryGradient(
 			this.mazeWidth,
 			this.mazeHeight
@@ -87,7 +92,7 @@ class Cell {
 		this.renderWalls(x, y, width, height, rows, columns);
 
 		// probably should call this a separate function for clarity
-		if (this.visited) {
+		if (this.params.visited) {
 			canvas.fillRect(
 				x + 1,
 				y + 1,
@@ -100,41 +105,58 @@ class Cell {
 	// Sorry for one letter params, but these get repeated a lot
 	// Walls get either shown or hidden depending on boolean
 	renderWalls(x, y, w, h, r, c) {
-		this.walls.topWall
+		this.params.walls.topWall
 			? WallRenderer.showTopWall(x, y, w, c)
 			: WallRenderer.hideTopWall(x, y, w, c);
 
-		this.walls.bottomWall
+		this.params.walls.bottomWall
 			? WallRenderer.showBottomWall(x, y, w, r, c)
 			: WallRenderer.hideBottomWall(x, y, w, r, c);
 
-		this.walls.rightWall
+		this.params.walls.rightWall
 			? WallRenderer.showRightWall(x, y, w, h, r, c)
 			: WallRenderer.hideRightWall(x, y, w, h, r, c);
 
-		this.walls.leftWall
+		this.params.walls.leftWall
 			? WallRenderer.showLeftWall(x, y, h, r)
 			: WallRenderer.hideLeftWall(x, y, h, r);
 	}
 
 	checkNeighbors() {
 		let grid = this.mazeGrid;
-		let row = this.mazeRows;
-		let column = this.mazeColumns;
+		let row = this.params.row;
+		let column = this.params.column;
 		let neighbors = [];
 
 		// Setting the neighbors of a cell, accounting for cells on outside border
-		let topNeighbor = row !== 0 ? grid[row - 1][column] : undefined;
-		let bottomNeighbor =
+		let top = row !== 0 ? grid[row - 1][column] : undefined;
+		let bottom =
 			row !== grid.length - 1
 				? grid[row + 1][column]
 				: undefined;
-		let rightNeighbor =
+		let right =
 			column !== grid[0].length - 1
 				? grid[row][column + 1]
 				: undefined;
-		let leftNeighbor =
-			column !== 0 ? grid[row][column - 1] : undefined;
+		let left = column !== 0 ? grid[row][column - 1] : undefined;
+
+		// Push neighbors into array if they exist and have not been visited
+		if (top && !top.visited) neighbors.push(top);
+		if (bottom && !bottom.visited) neighbors.push(bottom);
+		if (right && !right.visited) neighbors.push(right);
+		if (left && !left.visited) neighbors.push(left);
+
+		// Return a random neighbor
+		return randomNeighbor(neighbors);
+	}
+
+	randomNeighbor(neighborArray) {
+		if (neighborArray.length !== 0) {
+			let random = Math.floor(Math.random() * neighborArray.length);
+			return neighborArray[random];
+		} else {
+			return undefined;
+		}
 	}
 }
 
