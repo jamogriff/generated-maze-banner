@@ -62,7 +62,11 @@ class Cell {
 		ctx.fillRect(0, 0, this.mazeWidth, this.mazeHeight);
 		ctx.lineWidth = 2;
 		this.renderWalls(x, y, width, height, rows, columns);
-		// TODO: Add visited check here
+		
+		// probably should call this a separate function for clarity
+		if (this.visited) {
+			ctx.fillRect(x + 1, y + 1, width/columns - 2, height/rows - 2);
+		}
 	}
 
 	// Sorry for one letter params, but these get repeated a lot
