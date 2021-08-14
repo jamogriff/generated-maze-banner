@@ -23,11 +23,11 @@ export default class Maze {
 
 	initialize() {
 		// Results in 2D array where grid.length = # rows and grid[0].length = # of columns
-		for (let row = 0; row < this.rows; row++) {
+		for (let x = 0; x < this.rows; x++) {
 			let row = [];
-			for (let column = 0; column < this.columns; column++) {
+			for (let y = 0; y < this.columns; y++) {
 				// instantiate with reference to maze object with coordinate pair
-				let cell = new Cell(this, row, column);
+				let cell = new Cell(this, x, y);
 				row.push(cell);
 			}
 			this.grid.push(row);
@@ -53,11 +53,14 @@ export default class Maze {
 				);
 			}
 		}
+
+		currentCell.highlight(this.columns, this.rows, 1);
 	}
 }
 
 // Probably a big LoD violation in terms of instantiating a Cell
 // with it's parent, but there's crossover on a lot of its properties
+// NOTE: Refactor to include dimensions with object
 class Cell {
 	constructor(parent, row, column) {
 		// a Cell needs to know about the size of the canvas for rendering
@@ -82,10 +85,11 @@ class Cell {
 	show(width, height, rows, columns) {
 		let x = (this.params.row * width) / columns;
 		let y = (this.params.column * height) / rows;
-		canvas.strokeStyle = primaryGradient(
-			this.mazeWidth,
-			this.mazeHeight
-		);
+		canvas.strokeStyle = "black";
+		//canvas.strokeStyle = primaryGradient(
+			//this.mazeWidth,
+			//this.mazeHeight
+		//);
 		canvas.fillstyle = "black";
 		canvas.fillRect(0, 0, this.mazeWidth, this.mazeHeight);
 		canvas.lineWidth = 2;
@@ -102,16 +106,29 @@ class Cell {
 		}
 	}
 
-	// Columns and rows are passed in to set size of cell
-	highlight(columns, rows) {
+	// Columns and rows from maze are passed in to set size of cell
+	highlight(columns, rows, transparency) {
+		// transparency added to add a trailing effect
+		let alpha = "";
+		if (transparency == 1) alpha = "FF";
+		if (transparency == 0.5) alpha = "80";
 
+		let x = (this.params.column * this.mazeWidth) / columns + 1;
+		let y = (this.params.row * this.mazeHeight) / rows + 1;
+		canvas.fillStyle = "black";//"#edcb96" + alpha;
+		canvas.fillRect(
+			x,
+			y,
+			this.mazeWidth / columns - 2,
+			this.mazeHeight / rows - 2
+		);
 	}
 
 	// Logically removes walls, but doesn't render this change
 	removeWalls(cell1, cell2) {
 		// compares two neighboring cells on x-axis and y-axis respectively to determine relative location
-		let x = cell1.params.column - cell2.params.column
-		let y = cell1.params.row - cell2.params.row
+		let x = cell1.params.column - cell2.params.column;
+		let y = cell1.params.row - cell2.params.row;
 
 		// Since two neighboring cells have overlapping walls, two walls must be turned off at the same time
 		if (x === -1) {
@@ -182,7 +199,9 @@ class Cell {
 
 	randomNeighbor(neighborArray) {
 		if (neighborArray.length !== 0) {
-			let random = Math.floor(Math.random() * neighborArray.length);
+			let random = Math.floor(
+				Math.random() * neighborArray.length
+			);
 			return neighborArray[random];
 		} else {
 			return undefined;
