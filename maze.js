@@ -23,16 +23,18 @@ export default class Maze {
 
 	initialize() {
 		// Results in 2D array where grid.length = # rows and grid[0].length = # of columns
-		for (let x = 0; x < this.rows; x++) {
-			let row = [];
-			for (let y = 0; y < this.columns; y++) {
+		// Confusing because instead of an x, y coordinate its essentially y, x pair
+		for (let row = 0; row < this.rows; row++) {
+			let populatedRow = [];
+			for (let column = 0; column < this.columns; column++) {
 				// instantiate with reference to maze object with coordinate pair
-				let cell = new Cell(this, x, y);
-				row.push(cell);
+				let cell = new Cell(row, column, this);
+				populatedRow.push(cell);
 			}
-			this.grid.push(row);
+			this.grid.push(populatedRow);
 		}
 		currentCell = this.grid[0][0]; // node at top right
+		// add goal here?
 	}
 
 	draw() {
@@ -54,7 +56,7 @@ export default class Maze {
 			}
 		}
 
-		currentCell.highlight(this.columns, this.rows, 1);
+		currentCell.highlight(this.columns, this.rows, .5);
 	}
 }
 
@@ -62,7 +64,7 @@ export default class Maze {
 // with it's parent, but there's crossover on a lot of its properties
 // NOTE: Refactor to include dimensions with object
 class Cell {
-	constructor(parent, row, column) {
+	constructor(row, column, parent) {
 		// a Cell needs to know about the size of the canvas for rendering
 		// as well as the grid, to check it's neighbors
 		this.mazeWidth = parent.width;
@@ -83,13 +85,12 @@ class Cell {
 	}
 
 	show(width, height, rows, columns) {
-		let x = (this.params.row * width) / columns;
-		let y = (this.params.column * height) / rows;
-		canvas.strokeStyle = "black";
-		//canvas.strokeStyle = primaryGradient(
-			//this.mazeWidth,
-			//this.mazeHeight
-		//);
+		let x = (this.params.column * width) / columns;
+		let y = (this.params.row * height) / rows;
+		canvas.strokeStyle = primaryGradient(
+			this.mazeWidth,
+			this.mazeHeight
+		);
 		canvas.fillstyle = "black";
 		canvas.fillRect(0, 0, this.mazeWidth, this.mazeHeight);
 		canvas.lineWidth = 2;
@@ -115,7 +116,7 @@ class Cell {
 
 		let x = (this.params.column * this.mazeWidth) / columns + 1;
 		let y = (this.params.row * this.mazeHeight) / rows + 1;
-		canvas.fillStyle = "black";//"#edcb96" + alpha;
+		canvas.fillStyle = "#edcb96" + alpha;
 		canvas.fillRect(
 			x,
 			y,
@@ -157,8 +158,8 @@ class Cell {
 			: WallRenderer.hideTopWall(x, y, w, c);
 
 		this.params.walls.bottomWall
-			? WallRenderer.showBottomWall(x, y, w, r, c)
-			: WallRenderer.hideBottomWall(x, y, w, r, c);
+			? WallRenderer.showBottomWall(x, y, w, h, r, c)
+			: WallRenderer.hideBottomWall(x, y, w, h, r, c);
 
 		this.params.walls.rightWall
 			? WallRenderer.showRightWall(x, y, w, h, r, c)
