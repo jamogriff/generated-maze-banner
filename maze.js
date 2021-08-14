@@ -1,7 +1,7 @@
 export const banner = document.querySelector("#banner");
 export const canvas = banner.getContext("2d");
 
-let currentNode; // will become a Cell object
+let currentCell; // will become a Cell object
 const primaryGradient = (width, height) => {
 	let gradient = canvas.createLinearGradient(0, 0, width, height);
 	gradient.addColorStop(0, "#0E0E52"); // midnight blue
@@ -26,13 +26,13 @@ export default class Maze {
 		for (let row = 0; row < this.rows; row++) {
 			let row = [];
 			for (let column = 0; column < this.columns; column++) {
-				// instantiate with reference to maze object
-				let cell = new Cell(this);
+				// instantiate with reference to maze object with coordinate pair
+				let cell = new Cell(this, row, column);
 				row.push(cell);
 			}
 			this.grid.push(row);
 		}
-		currentNode = this.grid[0][0]; // node at top right
+		currentCell = this.grid[0][0]; // node at top right
 	}
 
 	draw() {
@@ -40,7 +40,7 @@ export default class Maze {
 		banner.height = this.height;
 		canvas.fillStyle = primaryGradient(banner.width, banner.height);
 		canvas.fillRect(0, 0, banner.width, banner.height);
-		currentNode.visited = true;
+		currentCell.visited = true;
 
 		for (let row = 0; row < this.rows; row++) {
 			for (let column = 0; column < this.columns; column++) {
@@ -57,9 +57,9 @@ export default class Maze {
 }
 
 // Probably a big LoD violation in terms of instantiating a Cell
-// with it's parent, but there's crossover on all of its properties
+// with it's parent, but there's crossover on a lot of its properties
 class Cell {
-	constructor(parent) {
+	constructor(parent, row, column) {
 		// a Cell needs to know about the size of the canvas for rendering
 		// as well as the grid, to check it's neighbors
 		this.mazeWidth = parent.width;
@@ -67,8 +67,8 @@ class Cell {
 		this.mazeGrid = parent.grid;
 		// the following are params specific to each cell
 		this.params = {
-			row: parent.rows,
-			column: parent.columns,
+			row: row,
+			column: column,
 			visited: false,
 			walls: {
 				topWall: true,
@@ -100,6 +100,11 @@ class Cell {
 				height / rows - 2
 			);
 		}
+	}
+
+	// Columns and rows are passed in to set size of cell
+	highlight(columns, rows) {
+
 	}
 
 	// Logically removes walls, but doesn't render this change
