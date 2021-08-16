@@ -2,12 +2,12 @@ export const banner = document.querySelector("#banner");
 export const canvas = banner.getContext("2d");
 
 let currentCell; // will become a Cell object
+const gridWidth = 2; // in pixels
 const primaryGradient = (width, height) => {
 	let gradient = canvas.createLinearGradient(0, 0, width, height);
 	gradient.addColorStop(0, "#0E0E52"); // midnight blue
 	gradient.addColorStop(0.5, "#FFB8D1"); // cotton candy
 	gradient.addColorStop(1, "#E34234"); // cinnabar
-	//Gold Crayola: #edcb96
 	return gradient;
 };
 
@@ -43,6 +43,7 @@ export default class Maze {
 		canvas.fillStyle = primaryGradient(banner.width, banner.height);
 		canvas.fillRect(0, 0, banner.width, banner.height);
 		currentCell.visited = true;
+		WallRenderer.drawBorder(banner.width, banner.height);
 
 		for (let row = 0; row < this.rows; row++) {
 			for (let column = 0; column < this.columns; column++) {
@@ -56,7 +57,7 @@ export default class Maze {
 			}
 		}
 
-		currentCell.highlight(this.columns, this.rows, .5);
+
 	}
 }
 
@@ -87,14 +88,14 @@ class Cell {
 	show(width, height, rows, columns) {
 		let x = (this.params.column * width) / columns;
 		let y = (this.params.row * height) / rows;
-		canvas.strokeStyle = primaryGradient(
-			this.mazeWidth,
-			this.mazeHeight
-		);
+		canvas.strokeStyle = "black"; // used for debugging
+		//canvas.strokeStyle = primaryGradient(
+			//this.mazeWidth,
+			//this.mazeHeight
+		//);
 		canvas.fillstyle = "black";
-		canvas.fillRect(0, 0, this.mazeWidth, this.mazeHeight);
-		canvas.lineWidth = 2;
-		this.renderWalls(x, y, width, height, rows, columns);
+		canvas.lineWidth = gridWidth;
+		WallRenderer.renderWalls(this.params.walls, x, y, width, height, rows, columns);
 
 		// probably should call this a separate function for clarity
 		if (this.params.visited) {
@@ -150,25 +151,6 @@ class Cell {
 		}
 	}
 
-	// Sorry for one letter params, but these get repeated a lot
-	// Walls get either shown or hidden depending on boolean
-	renderWalls(x, y, w, h, r, c) {
-		this.params.walls.topWall
-			? WallRenderer.showTopWall(x, y, w, c)
-			: WallRenderer.hideTopWall(x, y, w, c);
-
-		this.params.walls.bottomWall
-			? WallRenderer.showBottomWall(x, y, w, h, r, c)
-			: WallRenderer.hideBottomWall(x, y, w, h, r, c);
-
-		this.params.walls.rightWall
-			? WallRenderer.showRightWall(x, y, w, h, r, c)
-			: WallRenderer.hideRightWall(x, y, w, h, r, c);
-
-		this.params.walls.leftWall
-			? WallRenderer.showLeftWall(x, y, h, r)
-			: WallRenderer.hideLeftWall(x, y, h, r);
-	}
 
 	checkNeighbors() {
 		let grid = this.mazeGrid;
@@ -223,15 +205,15 @@ class WallRenderer {
 	}
 	static showBottomWall(x, y, width, height, rows, columns) {
 		canvas.beginPath();
-		canvas.moveTo(x, y + height / rows);
-		canvas.lineTo(x + width / columns, y + height / rows);
+		canvas.moveTo(x, y + (height / rows));
+		canvas.lineTo(x + width / columns, y + (height / rows));
 		canvas.stroke();
 	}
 
 	static showRightWall(x, y, width, height, rows, columns) {
 		canvas.beginPath();
-		canvas.moveTo(x + width / columns, y);
-		canvas.lineTo(x + width / columns, y + height / rows);
+		canvas.moveTo(x + (width / columns), y);
+		canvas.lineTo(x + (width / columns), y + height / rows);
 		canvas.stroke();
 	}
 
@@ -276,4 +258,38 @@ class WallRenderer {
 		canvas.lineTo(x, y + height / rows - 1);
 		canvas.stroke();
 	}
+
+	// Sorry for one letter params, but these get repeated a lot
+	// Walls get either shown or hidden depending on boolean
+	static renderWalls(walls, x, y, w, h, r, c) {
+		//debugger;
+		//if (walls.topWall) this.showTopWall(x, y, w, c);
+		//if (walls.bottomWall) this.showBottomWall(x, y, w, h, r, c);
+		//if (walls.rightWall) this.showRightWall(x, y, w, h, r, c);
+		//if (walls.leftWall) this.showLeftWall(x, y, h, r);
+		walls.topWall
+			? WallRenderer.showTopWall(x, y, w, c)
+			: WallRenderer.hideTopWall(x, y, w, c);
+
+		walls.bottomWall
+			? WallRenderer.showBottomWall(x, y, w, h, r, c)
+			: WallRenderer.hideBottomWall(x, y, w, h, r, c);
+
+		walls.rightWall
+			? WallRenderer.showRightWall(x, y, w, h, r, c)
+			: WallRenderer.hideRightWall(x, y, w, h, r, c);
+
+		walls.leftWall
+			? WallRenderer.showLeftWall(x, y, h, r)
+			: WallRenderer.hideLeftWall(x, y, h, r);
+	}
+
+	static drawBorder(width, height) {
+		canvas.beginPath();
+		canvas.lineWidth = gridWidth + 2; // used to compensate stroke bleeding out of canvas
+		canvas.strokeStyle = "black"; // used for debugging
+		canvas.strokeRect(0, 0, width, height);
+	}
+
+
 }
