@@ -33,7 +33,9 @@ export default class Maze {
 			}
 			this.grid.push(populatedRow);
 		}
+		// Initialize starting cell and stack for maze generation
 		currentCell = this.grid[0][0]; // node at top right
+		currentCell.params.visited = true;
 		// add goal here?
 	}
 
@@ -42,7 +44,7 @@ export default class Maze {
 		banner.height = this.height;
 		canvas.fillStyle = primaryGradient(banner.width, banner.height);
 		canvas.fillRect(0, 0, banner.width, banner.height);
-		currentCell.visited = true;
+		//currentCell.visited = true;
 		WallRenderer.drawBorder(banner.width, banner.height);
 
 		for (let row = 0; row < this.rows; row++) {
@@ -56,8 +58,52 @@ export default class Maze {
 				);
 			}
 		}
+		// Iterative maze generation
+		let neighbor = currentCell.checkNeighbors();
 
+		if (neighbor) {
+			currentCell.highlight(this.columns, this.rows, 1);
+			this.stack.push(currentCell);
+			currentCell.removeWalls(neighbor);
+			neighbor.params.visited = true;
+			this.stack.push(neighbor);
+			currentCell = neighbor;
+		} else if (this.stack.length > 0) {
+			currentCell = this.stack.pop();
+			currentCell.highlight(this.columns, this.rows, 1);
+		}
 
+		if (this.stack.length == 0) {
+			console.log("Maze gen finished");
+			return;
+		}
+
+		// while there are cells to traverse (i.e. stack)
+		//while (this.stack.length !== 0) {
+			//// take top of stack and call it current
+			//let current = this.stack.pop();
+			////debugger;
+			//current.highlight(this.columns, this.rows, 1);
+			//let neighbors = current.checkNeighbors();
+			//// if current has any neighbors
+			//if (neighbors.length > 0) {
+				//// push current back to stack which
+				//// allows for backtracking
+				//this.stack.push(current);
+
+				//// select random neighbor
+				//let neighbor =
+					//current.randomNeighbor(neighbors);
+				//// remove walls between cells
+				//current.removeWalls(neighbor);
+				//neighbor.params.visited = true;
+				//this.stack.push(neighbor);
+			//}
+		//}
+		// Since this method get called at least 30fps,  we need to streamline the maze generation algorithm to run in a more conditional manner
+		window.requestAnimationFrame(() => {
+			this.draw();
+		});
 	}
 }
 
@@ -90,12 +136,20 @@ class Cell {
 		let y = (this.params.row * height) / rows;
 		canvas.strokeStyle = "black"; // used for debugging
 		//canvas.strokeStyle = primaryGradient(
-			//this.mazeWidth,
-			//this.mazeHeight
+		//this.mazeWidth,
+		//this.mazeHeight
 		//);
 		canvas.fillstyle = "black";
 		canvas.lineWidth = gridWidth;
-		WallRenderer.renderWalls(this.params.walls, x, y, width, height, rows, columns);
+		WallRenderer.renderWalls(
+			this.params.walls,
+			x,
+			y,
+			width,
+			height,
+			rows,
+			columns
+		);
 
 		// probably should call this a separate function for clarity
 		if (this.params.visited) {
@@ -127,30 +181,29 @@ class Cell {
 	}
 
 	// Logically removes walls, but doesn't render this change
-	removeWalls(cell1, cell2) {
+	removeWalls(neighborCell) {
 		// compares two neighboring cells on x-axis and y-axis respectively to determine relative location
-		let x = cell1.params.column - cell2.params.column;
-		let y = cell1.params.row - cell2.params.row;
+		let x = this.params.column - neighborCell.params.column;
+		let y = this.params.row - neighborCell.params.row;
 
 		// Since two neighboring cells have overlapping walls, two walls must be turned off at the same time
 		if (x === -1) {
-			cell1.params.walls.rightWall = false;
-			cell2.params.walls.leftWall = false;
+			this.params.walls.rightWall = false;
+			neighborCell.params.walls.leftWall = false;
 		} else if (x === 1) {
-			cell1.params.walls.leftWall = false;
-			cell2.params.walls.rightWall = false;
+			this.params.walls.leftWall = false;
+			neighborCell.params.walls.rightWall = false;
 		}
 
 		// Same concept for y-axis
 		if (y === -1) {
-			cell1.params.walls.bottomWall = false;
-			cell2.params.walls.topWall = false;
+			this.params.walls.bottomWall = false;
+			neighborCell.params.walls.topWall = false;
 		} else if (y === 1) {
-			cell1.params.walls.topWall = false;
-			cell2.params.walls.bottomWall = false;
+			this.params.walls.topWall = false;
+			neighborCell.params.walls.bottomWall = false;
 		}
 	}
-
 
 	checkNeighbors() {
 		let grid = this.mazeGrid;
@@ -171,13 +224,13 @@ class Cell {
 		let left = column !== 0 ? grid[row][column - 1] : undefined;
 
 		// Push neighbors into array if they exist and have not been visited
-		if (top && !top.visited) neighbors.push(top);
-		if (bottom && !bottom.visited) neighbors.push(bottom);
-		if (right && !right.visited) neighbors.push(right);
-		if (left && !left.visited) neighbors.push(left);
+		if (top && !top.params.visited) neighbors.push(top);
+		if (bottom && !bottom.params.visited) neighbors.push(bottom);
+		if (right && !right.params.visited) neighbors.push(right);
+		if (left && !left.params.visited) neighbors.push(left);
 
-		// Return a random neighbor
-		return randomNeighbor(neighbors);
+		// Return neighbors array
+		return this.randomNeighbor(neighbors);
 	}
 
 	randomNeighbor(neighborArray) {
@@ -205,15 +258,15 @@ class WallRenderer {
 	}
 	static showBottomWall(x, y, width, height, rows, columns) {
 		canvas.beginPath();
-		canvas.moveTo(x, y + (height / rows));
-		canvas.lineTo(x + width / columns, y + (height / rows));
+		canvas.moveTo(x, y + height / rows);
+		canvas.lineTo(x + width / columns, y + height / rows);
 		canvas.stroke();
 	}
 
 	static showRightWall(x, y, width, height, rows, columns) {
 		canvas.beginPath();
-		canvas.moveTo(x + (width / columns), y);
-		canvas.lineTo(x + (width / columns), y + height / rows);
+		canvas.moveTo(x + width / columns, y);
+		canvas.lineTo(x + width / columns, y + height / rows);
 		canvas.stroke();
 	}
 
@@ -235,7 +288,7 @@ class WallRenderer {
 		canvas.stroke();
 	}
 
-	static hideBottomPath(x, y, width, height, rows, columns) {
+	static hideBottomWall(x, y, width, height, rows, columns) {
 		canvas.beginPath();
 		canvas.strokeStyle = "black";
 		canvas.moveTo(x + 1, y + height / rows);
@@ -243,7 +296,7 @@ class WallRenderer {
 		canvas.stroke();
 	}
 
-	static hideRightPath(x, y, width, rows, columns) {
+	static hideRightWall(x, y, width, rows, columns) {
 		canvas.beginPath();
 		canvas.strokeStyle = "black";
 		canvas.moveTo(x + width / columns, y + 1);
@@ -251,7 +304,7 @@ class WallRenderer {
 		canvas.stroke();
 	}
 
-	static hideLeftPath(x, y, height, rows) {
+	static hideLeftWall(x, y, height, rows) {
 		canvas.beginPath();
 		canvas.strokeStyle = "black";
 		canvas.moveTo(x, y + 1);
@@ -290,6 +343,4 @@ class WallRenderer {
 		canvas.strokeStyle = "black"; // used for debugging
 		canvas.strokeRect(0, 0, width, height);
 	}
-
-
 }
