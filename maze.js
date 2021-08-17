@@ -5,6 +5,7 @@ let currentCell; // will become a Cell object
 const gridWidth = 2; // in pixels
 const gridOffset = gridWidth / 2;
 const bgColor = "black";
+const primaryColor = "#edcb96";
 const primaryGradient = (width, height) => {
 	let gradient = canvas.createLinearGradient(0, 0, width, height);
 	gradient.addColorStop(0, "#0E0E52"); // midnight blue
@@ -104,7 +105,6 @@ export default class Maze {
 
 // Probably a big LoD violation in terms of instantiating a Cell
 // with it's parent, but there's crossover on a lot of its properties
-// NOTE: Refactor to include dimensions with object
 class Cell {
 	constructor(row, column, parent) {
 		// a Cell needs to know about the size of the canvas for rendering
@@ -112,7 +112,6 @@ class Cell {
 		this.mazeWidth = parent.width;
 		this.mazeHeight = parent.height;
 		this.mazeGrid = parent.grid;
-		// the following are params specific to each cell
 		this.params = {
 			row: row,
 			column: column,
@@ -126,16 +125,25 @@ class Cell {
 		};
 	}
 
+	fill(x, y, rows, columns, fillType) {
+			canvas.fillStyle = fillType;
+			canvas.fillRect(
+				x + gridWidth,
+				y + gridWidth,
+				this.mazeWidth / columns - gridWidth,
+				this.mazeHeight / rows - gridWidth
+			);
+	}
+
+
 	show(rows, columns) {
 		let x = (this.params.column * this.mazeWidth) / columns;
 		let y = (this.params.row * this.mazeHeight) / rows;
-		//canvas.strokeStyle = "black"; // used for debugging
 		canvas.strokeStyle = primaryGradient(
 			this.mazeWidth,
 			this.mazeHeight
 		);
 		canvas.lineWidth = gridWidth;
-		// Removes walls
 		WallRenderer.renderWalls(
 			this.params.walls,
 			x,
@@ -146,16 +154,7 @@ class Cell {
 			columns
 		);
 
-		// probably should call this a separate function for clarity
-		if (this.params.visited) {
-			canvas.fillStyle = "black";
-			canvas.fillRect(
-				x + gridWidth,
-				y + gridWidth,
-				this.mazeWidth / columns - gridWidth,
-				this.mazeHeight / rows - gridWidth
-			);
-		}
+		if (this.params.visited) this.fill(x, y, columns, rows, bgColor);
 	}
 
 	// Columns and rows from maze are passed in to set size of cell
@@ -164,16 +163,11 @@ class Cell {
 		let alpha = "";
 		if (transparency == 1) alpha = "FF";
 		if (transparency == 0.5) alpha = "80";
-
+		let color = primaryColor + alpha;
 		let x = (this.params.column * this.mazeWidth) / columns;
 		let y = (this.params.row * this.mazeHeight) / rows;
-		canvas.fillStyle = "#edcb96" + alpha;
-		canvas.fillRect(
-			x + gridWidth,
-			y + gridWidth,
-			this.mazeWidth / columns - gridWidth,
-			this.mazeHeight / rows - gridWidth
-		);
+
+		this.fill(x, y, columns, rows, color);
 	}
 
 	// Logically removes walls, but doesn't render this change
@@ -220,6 +214,7 @@ class Cell {
 		let left = column !== 0 ? grid[row][column - 1] : undefined;
 
 		// Push neighbors into array if they exist and have not been visited
+		// TODO: Refactor to switch cases
 		if (top && !top.params.visited) neighbors.push(top);
 		if (bottom && !bottom.params.visited) neighbors.push(bottom);
 		if (right && !right.params.visited) neighbors.push(right);
