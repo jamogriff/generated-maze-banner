@@ -70,33 +70,14 @@ export default class Maze {
 		}
 
 		if (this.stack.length == 0) {
+			// TODO: Add finished flag here
 			console.log("Maze gen finished");
 			return;
 		}
 
-		// while there are cells to traverse (i.e. stack)
-		//while (this.stack.length !== 0) {
-		//// take top of stack and call it current
-		//let current = this.stack.pop();
-		////debugger;
-		//current.highlight(this.columns, this.rows, 1);
-		//let neighbors = current.checkNeighbors();
-		//// if current has any neighbors
-		//if (neighbors.length > 0) {
-		//// push current back to stack which
-		//// allows for backtracking
-		//this.stack.push(current);
-
-		//// select random neighbor
-		//let neighbor =
-		//current.randomNeighbor(neighbors);
-		//// remove walls between cells
-		//current.removeWalls(neighbor);
-		//neighbor.params.visited = true;
-		//this.stack.push(neighbor);
-		//}
-		//}
-		// Since this method get called at least 30fps,  we need to streamline the maze generation algorithm to run in a more conditional manner
+		// Since this method get called at least 30fps,
+		// we need to streamline the maze generation algorithm
+		// to run in a more conditional manner
 		window.requestAnimationFrame(() => {
 			this.draw();
 		});
@@ -126,15 +107,14 @@ class Cell {
 	}
 
 	fill(x, y, rows, columns, fillType) {
-			canvas.fillStyle = fillType;
-			canvas.fillRect(
-				x + gridWidth,
-				y + gridWidth,
-				this.mazeWidth / columns - gridWidth,
-				this.mazeHeight / rows - gridWidth
-			);
+		canvas.fillStyle = fillType;
+		canvas.fillRect(
+			x + gridWidth,
+			y + gridWidth,
+			this.mazeWidth / columns - gridWidth,
+			this.mazeHeight / rows - gridWidth
+		);
 	}
-
 
 	show(rows, columns) {
 		let x = (this.params.column * this.mazeWidth) / columns;
@@ -154,7 +134,8 @@ class Cell {
 			columns
 		);
 
-		if (this.params.visited) this.fill(x, y, columns, rows, bgColor);
+		if (this.params.visited)
+			this.fill(x, y, columns, rows, bgColor);
 	}
 
 	// Columns and rows from maze are passed in to set size of cell
@@ -278,10 +259,13 @@ class WallRenderer {
 
 	// Walls render as hidden depending on boolean status in Cell object
 	static renderWalls(walls, x, y, w, h, r, c) {
-		if (walls.topWall == false) WallRenderer.hideTopWall(x, y, w, c);
-		if (walls.bottomWall == false) WallRenderer.hideBottomWall(x, y, w, h, r, c);
-		if (walls.rightWall == false) WallRenderer.hideRightWall(x, y, w, h, r, c);
-		if (walls.leftWall == false) WallRenderer.hideLeftWall(x, y, h, r);
+		if (walls.topWall == false)
+			WallRenderer.hideTopWall(x, y, w, c);
+		if (walls.bottomWall == false)
+			WallRenderer.hideBottomWall(x, y, w, h, r, c);
+		if (walls.rightWall == false)
+			WallRenderer.hideRightWall(x, y, w, h, r, c);
+		if (walls.leftWall == false)
+			WallRenderer.hideLeftWall(x, y, h, r);
 	}
-
 }
