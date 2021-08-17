@@ -6,7 +6,6 @@ const gridWidth = 2; // in pixels
 const gridOffset = gridWidth / 2;
 const bgColor = "black";
 const primaryColor = "#edcb96";
-//const primaryColor = "#8CFF98";
 const primaryGradient = (width, height) => {
 	let gradient = canvas.createLinearGradient(0, 0, width, height);
 	gradient.addColorStop(0, "#0E0E52"); // midnight blue
@@ -23,6 +22,7 @@ export default class Maze {
 		this.columns = columns;
 		this.grid = [];
 		this.stack = [];
+		this.complete = false;
 	}
 
 	initialize() {
@@ -40,7 +40,6 @@ export default class Maze {
 		// Initialize starting cell and stack for maze generation
 		currentCell = this.grid[0][0]; // node at top right
 		currentCell.params.visited = true;
-		// add goal here?
 	}
 
 	draw() {
@@ -85,8 +84,7 @@ export default class Maze {
 		}
 
 		if (this.stack.length == 0) {
-			// TODO: Add finished flag here
-			console.log("Maze gen finished");
+			this.complete = true;
 			return;
 		}
 
