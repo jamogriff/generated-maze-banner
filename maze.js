@@ -6,6 +6,7 @@ const gridWidth = 2; // in pixels
 const gridOffset = gridWidth / 2;
 const bgColor = "black";
 const primaryColor = "#edcb96";
+//const primaryColor = "#8CFF98";
 const primaryGradient = (width, height) => {
 	let gradient = canvas.createLinearGradient(0, 0, width, height);
 	gradient.addColorStop(0, "#0E0E52"); // midnight blue
@@ -54,19 +55,33 @@ export default class Maze {
 				grid[row][column].show(this.rows, this.columns);
 			}
 		}
-		// Iterative maze generation
+		/*	
+		Since the draw method get called at least 30fps,
+		we need to streamline maze generation algorithm
+		to run in a more conditional manner.
+		
+		After selecting the start cell (Cnaut), we check for 3 different states:
+		1. A neighbor of Cnaut exists that has not been visited.
+			1a. Add Cnaut and neighbor to stack, mark neighbor as visited
+			and remove walls between Cnaut and neighbor.
+		2. A neighbor of Cnaut does not exist.
+			2a. Begin backtracking from stack.
+		3. "Base case": stack is empty.
+
+		*/
 		let neighbor = currentCell.checkNeighbors();
 
+		// TODO: Add indication animation to indicate backtracking
 		if (neighbor) {
-			currentCell.highlight(this.columns, this.rows, 1);
 			this.stack.push(currentCell);
 			currentCell.removeWalls(neighbor);
 			neighbor.params.visited = true;
+			neighbor.highlight(this.columns, this.rows, primaryColor);
 			this.stack.push(neighbor);
 			currentCell = neighbor;
 		} else if (this.stack.length > 0) {
 			currentCell = this.stack.pop();
-			currentCell.highlight(this.columns, this.rows, 1);
+			currentCell.highlight(this.columns, this.rows, primaryColor);
 		}
 
 		if (this.stack.length == 0) {
@@ -75,9 +90,6 @@ export default class Maze {
 			return;
 		}
 
-		// Since this method get called at least 30fps,
-		// we need to streamline the maze generation algorithm
-		// to run in a more conditional manner
 		window.requestAnimationFrame(() => {
 			this.draw();
 		});
@@ -135,20 +147,21 @@ class Cell {
 		);
 
 		if (this.params.visited)
-			this.fill(x, y, columns, rows, bgColor);
+			this.fill(x, y, rows, columns, bgColor);
 	}
 
 	// Columns and rows from maze are passed in to set size of cell
-	highlight(columns, rows, transparency) {
-		// transparency added to add a trailing effect
+	highlight(columns, rows, color) {
+		// transparency added to add a trailing effect in future iteration
 		let alpha = "";
-		if (transparency == 1) alpha = "FF";
-		if (transparency == 0.5) alpha = "80";
-		let color = primaryColor + alpha;
+		// Refactor to switch cases
+		//if (transparency == 1) alpha = "FF";
+		//if (transparency == 0.5) alpha = "80";
+		//if (transparency == 0.3) alpha = "4D";
 		let x = (this.params.column * this.mazeWidth) / columns;
 		let y = (this.params.row * this.mazeHeight) / rows;
 
-		this.fill(x, y, columns, rows, color);
+		this.fill(x, y, rows, columns, color);
 	}
 
 	// Logically removes walls, but doesn't render this change
@@ -268,4 +281,8 @@ class WallRenderer {
 		if (walls.leftWall == false)
 			WallRenderer.hideLeftWall(x, y, h, r);
 	}
+}
+
+class Animations {
+
 }
