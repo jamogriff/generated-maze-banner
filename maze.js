@@ -4,6 +4,7 @@ export const canvas = banner.getContext("2d");
 let currentCell; // will become a Cell object
 const gridWidth = 2; // in pixels
 const gridOffset = gridWidth / 2;
+const bgColor = "black";
 const primaryGradient = (width, height) => {
 	let gradient = canvas.createLinearGradient(0, 0, width, height);
 	gradient.addColorStop(0, "#0E0E52"); // midnight blue
@@ -240,14 +241,11 @@ class Cell {
 	}
 }
 
-// A massive amount of work is done on the maze to handle
-// drawing/hiding walls, therefore this separate class
-// is used to put that chunk of functionality
 class WallRenderer {
 	// Wall hiding functions that are used on cells marked 'false
 	static hideTopWall(x, y, width, columns) {
 		canvas.beginPath();
-		canvas.strokeStyle = "black";
+		canvas.strokeStyle = bgColor;
 		canvas.moveTo(x + gridWidth, y + gridOffset);
 		canvas.lineTo(x + width / columns, y + gridOffset);
 		canvas.stroke();
@@ -255,7 +253,7 @@ class WallRenderer {
 
 	static hideBottomWall(x, y, width, height, rows, columns) {
 		canvas.beginPath();
-		canvas.strokeStyle = "black";
+		canvas.strokeStyle = bgColor;
 		canvas.moveTo(x + gridWidth, gridOffset + y + height / rows);
 		canvas.lineTo(
 			x + width / columns,
@@ -266,7 +264,7 @@ class WallRenderer {
 
 	static hideRightWall(x, y, width, height, rows, columns) {
 		canvas.beginPath();
-		canvas.strokeStyle = "black";
+		canvas.strokeStyle = bgColor;
 		canvas.moveTo(x + width / columns + gridOffset, y + gridWidth);
 		canvas.lineTo(
 			x + width / columns + gridOffset,
@@ -277,31 +275,18 @@ class WallRenderer {
 
 	static hideLeftWall(x, y, height, rows) {
 		canvas.beginPath();
-		canvas.strokeStyle = "black";
+		canvas.strokeStyle = bgColor;
 		canvas.moveTo(x + gridOffset, y + gridWidth);
 		canvas.lineTo(x + gridOffset, y + height / rows);
 		canvas.stroke();
 	}
 
-	// Sorry for one letter params, but these get repeated a lot
-	// Walls get either shown or hidden depending on boolean
+	// Walls render as hidden depending on boolean status in Cell object
 	static renderWalls(walls, x, y, w, h, r, c) {
-		// REVIEW
-		walls.topWall
-			? undefined
-			: WallRenderer.hideTopWall(x, y, w, c);
-
-		walls.bottomWall
-			? undefined
-			: WallRenderer.hideBottomWall(x, y, w, h, r, c);
-
-		walls.rightWall
-			? undefined
-			: WallRenderer.hideRightWall(x, y, w, h, r, c);
-
-		walls.leftWall
-			? undefined
-			: WallRenderer.hideLeftWall(x, y, h, r);
+		if (walls.topWall == false) WallRenderer.hideTopWall(x, y, w, c);
+		if (walls.bottomWall == false) WallRenderer.hideBottomWall(x, y, w, h, r, c);
+		if (walls.rightWall == false) WallRenderer.hideRightWall(x, y, w, h, r, c);
+		if (walls.leftWall == false) WallRenderer.hideLeftWall(x, y, h, r);
 	}
 
 }
