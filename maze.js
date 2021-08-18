@@ -74,10 +74,10 @@ export default class Maze {
 
 		// TODO: Add indication animation to indicate backtracking
 		if (neighbor) {
+			currentCell.highlight(this.columns, this.rows, primaryColor);
 			this.stack.push(currentCell);
 			currentCell.removeWalls(neighbor);
 			neighbor.params.visited = true;
-			neighbor.highlight(this.columns, this.rows, primaryColor);
 			this.stack.push(neighbor);
 			currentCell = neighbor;
 		} else if (this.stack.length > 0) {
