@@ -40,13 +40,15 @@ export default class Maze {
 		// Initialize starting cell and stack for maze generation
 		currentCell = this.grid[0][0]; // node at top right
 		currentCell.params.visited = true;
-	}
 
-	draw() {
+		// Render initial banner background and size
 		banner.width = this.width + gridWidth;
 		banner.height = this.height + gridWidth;
 		canvas.fillStyle = primaryGradient(banner.width, banner.height);
 		canvas.fillRect(0, 0, banner.width, banner.height);
+	}
+
+	draw() {
 
 		for (let row = 0; row < this.rows; row++) {
 			for (let column = 0; column < this.columns; column++) {
