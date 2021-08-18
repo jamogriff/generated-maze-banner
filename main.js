@@ -1,42 +1,30 @@
-import Animation from "./banner.js";
+import AnimationHandler from "./banner.js";
 import Maze from "./maze.js";
+import {aspectRatio, logoPlacement} from "./size-helpers.js";
 
-const BANNER_WIDTH = 400; // width of banner in pixels
-const HEIGHT_RATIO = 3; // height of banner e.g. 3:1 aspect ratio
-const CELL_SIZE = 20; // size of each cell in generated maze
+/*
+Banner width is in pixels, height ratio determines the x:1 aspect ratio of the banner and
+cell factor is a percentage of width that determines how small/large each cell is. The following produce good effects, but any other numbers will result in inconsistent results:
+	- 0.2 super tiny cells
+	- 0.1 medium cells
+	- 0.05 large cells
+*/
+const BANNER_WIDTH = 400; // Val only tested between 200 and 800
+const HEIGHT_RATIO = 8;
+const CELL_FACTOR = 0.1;
 
-// Width and cellSize are in pixels, ratio determines the x:1 aspect ratio
-function aspectRatio(width, cellSize, ratio) {
-	// would be preferable to implement promise here
-	if (width < 200 || width > 800) return undefined;
-	else {
-		let numCol = width * 0.1; // Wall rendering was visually tuned to cell size being 10%
-		let height = width / ratio;
-		let dimensions = {
-			x: width,
-			y: height,
-			rows: (height * numCol) / width, // cross product
-			columns: numCol,
-		};
-		return dimensions;
-	}
-}
+/*
+The following are hashes that store calibrated coordinates,
+and dimensions used to create a maze and logo respectively
+*/
+const size = aspectRatio(BANNER_WIDTH, CELL_FACTOR, HEIGHT_RATIO);
+const logo = logoPlacement(size.x, size.y);
 
-function logoPlacement(width, height) {
-	// Using Canvas height to constrain height of logo
-	let yBuffer = 20; // space buffer above and below logo
-	let logoHeight = height - yBuffer;
-	let logoWidth = logoHeight * 2.5; // 2.5:1 is aspect ratio of my logo, YMMV
-	let logoX = width / 2 - logoWidth / 2;
-	let logoY = yBuffer / 2;
-	let logo = {
-		x: logoX,
-		y: logoY,
-		width: logoWidth,
-		height: logoHeight,
-	};
-	return logo;
-}
+let maze = new Maze(size.x, size.y, size.rows, size.columns);
+maze.initialize();
+maze.draw();
+AnimationHandler.checkMazeEnd(maze);
+
 let counter = 0;
 function drawLogo(logo, opacity) {
 	if (opacity >= 0.44) return;
@@ -51,15 +39,5 @@ function drawLogo(logo, opacity) {
 	setTimeout(function(){ drawLogo(logo, opacity); }, 200);
 }
 
-const size = aspectRatio(BANNER_WIDTH, CELL_SIZE, HEIGHT_RATIO);
-//const logo = logoPlacement(size.x, size.y);
 
-/*
-create a new maze banner where:
-(width, height, # rows, # columns)
-*/
-let maze = new Maze(size.x, size.y, size.rows, size.columns);
-maze.initialize();
-Animation.fadeBlack(size.x, size.y, 0);
-drawLogo(logoPlacement(size.x, size.y), 0);
-//maze.draw();
+//drawLogo(logoPlacement(size.x, size.y), 0);
