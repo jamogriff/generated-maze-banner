@@ -9,8 +9,8 @@ cell factor is a percentage of width that determines how small/large each cell i
 	- 0.1 medium cells
 	- 0.05 large cells
 */
-const BANNER_WIDTH = 400; // Val only tested between 200 and 800
-const HEIGHT_RATIO = 8;
+const BANNER_WIDTH = 400; // Tested between 200 and 800
+const HEIGHT_RATIO = 8; // Tested from 1 to 8
 const CELL_FACTOR = 0.1;
 
 /*
@@ -23,21 +23,4 @@ const logo = logoPlacement(size.x, size.y);
 let maze = new Maze(size.x, size.y, size.rows, size.columns);
 maze.initialize();
 maze.draw();
-AnimationHandler.checkMazeEnd(maze);
-
-let counter = 0;
-function drawLogo(logo, opacity) {
-	if (opacity >= 0.44) return;
-	let canvas = document.getElementById("banner");
-	let ctx = canvas.getContext("2d");
-	let image = document.getElementById("brand");
-	opacity += 0.04;
-	ctx.globalAlpha = opacity;
-	ctx.drawImage(image, logo.x, logo.y, logo.width, logo.height);
-	// callback function has to be wrapped in an anonymous function
-	// otherwise the function gets called immediately
-	setTimeout(function(){ drawLogo(logo, opacity); }, 200);
-}
-
-
-//drawLogo(logoPlacement(size.x, size.y), 0);
+AnimationHandler.checkSequence(maze, logo);
