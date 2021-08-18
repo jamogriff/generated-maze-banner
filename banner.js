@@ -1,16 +1,17 @@
-//class AnimationHandler {
-	//static checkMazeEnd(flag) {
-		//let timeoutId = setTimeout(checkMazeEnd, 300);
-		//console.log("checking for end of animation...");
-		//if (flag == true) {
-			//console.log("Maze is finished");
-			//clearTimeout(timeoutId);
-			//// start next animation
-			//Animation.blink();
-			//checkCursorEnd(#flag here);
-			//return;
-		//}
-	//}
+export default class AnimationHandler {
+
+	static checkMazeEnd(maze) {
+		let timeoutId = setTimeout(function(){AnimationHandler.checkMazeEnd(maze);}, 3000);
+		let flag = maze.complete;
+		console.log("checking for end of animation...");
+		if (flag == true) {
+			console.log("Maze is finished");
+			clearTimeout(timeoutId);
+			// start next animation
+			Animation.fadeBlack(maze.width, maze.height, 0);
+			return;
+		}
+	}
 
 	//static checkCursorEnd(flag) {
 		//let timeoutId = setTimeout(checkCursorEnd, 1000);
@@ -37,7 +38,9 @@
 	//}
 //}
 
-export default class Animation {
+}
+
+export class Animation {
 
 
  //blink = () => {
