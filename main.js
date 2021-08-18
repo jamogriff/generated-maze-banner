@@ -1,5 +1,9 @@
-import "./banner.js";
+import Animation from "./banner.js";
 import Maze from "./maze.js";
+
+const BANNER_WIDTH = 400; // width of banner in pixels
+const HEIGHT_RATIO = 3; // height of banner e.g. 3:1 aspect ratio
+const CELL_SIZE = 20; // size of each cell in generated maze
 
 // Width and cellSize are in pixels, ratio determines the x:1 aspect ratio
 function aspectRatio(width, cellSize, ratio) {
@@ -12,7 +16,7 @@ function aspectRatio(width, cellSize, ratio) {
 			x: width,
 			y: height,
 			rows: (height * numCol) / width, // cross product
-			columns: numCol
+			columns: numCol,
 		};
 		return dimensions;
 	}
@@ -29,20 +33,25 @@ function logoPlacement(width, height) {
 		x: logoX,
 		y: logoY,
 		width: logoWidth,
-		height: logoHeight
-	}
+		height: logoHeight,
+	};
 	return logo;
 }
-
-function drawLogo(logo) {
+let counter = 0;
+function drawLogo(logo, opacity) {
+	if (opacity >= 0.44) return;
 	let canvas = document.getElementById("banner");
 	let ctx = canvas.getContext("2d");
 	let image = document.getElementById("brand");
+	opacity += 0.04;
+	ctx.globalAlpha = opacity;
 	ctx.drawImage(image, logo.x, logo.y, logo.width, logo.height);
+	// callback function has to be wrapped in an anonymous function
+	// otherwise the function gets called immediately
+	setTimeout(function(){ drawLogo(logo, opacity); }, 200);
 }
 
-
-const size = aspectRatio(400, 30, 4);
+const size = aspectRatio(BANNER_WIDTH, CELL_SIZE, HEIGHT_RATIO);
 //const logo = logoPlacement(size.x, size.y);
 
 /*
@@ -51,5 +60,6 @@ create a new maze banner where:
 */
 let maze = new Maze(size.x, size.y, size.rows, size.columns);
 maze.initialize();
-drawLogo(logoPlacement(size.x, size.y));
+Animation.fadeBlack(size.x, size.y, 0);
+drawLogo(logoPlacement(size.x, size.y), 0);
 //maze.draw();
