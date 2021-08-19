@@ -11,6 +11,7 @@ staying local in scope, thus everything is a class method.
 let textCounter = 0;
 let timeCheck1 = 0;
 let opacityCheck1 = 0;
+let blinkCounter = 0;
 let timeCheck2 = 0;
 let opacityCheck2 = 0;
 
@@ -40,34 +41,27 @@ export class AnimationHandler {
 		Animation.typeWriter(text, color);
 	}
 	/*
-	The main function that checks for end of maze gen
-	and then starts the next animation, which then
-	cascades onto the next check and so on
+	The main function that uses time delay to wait
+	and then start the next animation, which then
+	cascades onto the next check and so on until
+	animation is complete
 	*/
 	static directSequence(banner, maze, logo) {
 		let timeoutId = setTimeout(function () {
-			AnimationHandler.directSequence(
-				banner,
-				maze,
-				logo
-			);
+			AnimationHandler.directSequence(banner, maze, logo);
 		}, 2000);
 		console.log("Waiting for end of text animation...");
 		timeCheck1 += 1;
+		// Essentially waits 6 seconds
 		if (timeCheck1 >= 3) {
-			console.log("Text is finished");
 			clearTimeout(timeoutId);
-			// start next animation
+			console.log("Start fade in.");
 			Animation.fadeIn(
 				banner.width,
 				banner.height,
-				banner.color,
+				banner.color
 			);
-			AnimationHandler.checkFadeIn(
-				banner,
-				maze,
-				logo
-			);
+			AnimationHandler.checkFadeIn(banner, maze, logo);
 			return;
 		}
 	}
@@ -76,37 +70,43 @@ export class AnimationHandler {
 		let timeoutId = setTimeout(function () {
 			AnimationHandler.checkFadeIn(banner, maze, logo);
 		}, 1000);
-		console.log("Checking for end of fade in sequence...");
-
-		// Basically will just initiate after 3 seconds
-		if (opacityCheck1 >= .6) {
-			console.log("Maze start");
+		console.log("Checking for end of fade sequence...");
+		if (opacityCheck1 >= 0.6) {
 			clearTimeout(timeoutId);
+			console.log("Start maze generation.");
+			// Prior animation messes with alpha value
+			// so resetting here
 			ctx.globalAlpha = 1;
-			banner.draw(banner.color);
-			maze.draw();
+			banner.draw(banner.color); // creates fresh background
+			maze.draw(); // maze generation animation
 			AnimationHandler.checkMazeEnd(banner, maze, logo);
 			return;
 		}
 	}
+
 	static checkMazeEnd(banner, maze, logo) {
 		let timeoutId = setTimeout(function () {
-			AnimationHandler.checkMazeEnd(
-				banner,
-				maze,
-				logo
-			);
+			AnimationHandler.checkMazeEnd(banner, maze, logo);
 		}, 3000);
 		let flag = maze.complete;
-		console.log("Checking for end of animation...");
+		console.log("Checking for end of maze gen...");
 		if (flag == true) {
-			console.log("Maze is finished");
+			console.log("Start blink transition.");
 			clearTimeout(timeoutId);
-			// start next animation
-			Animation.fadeBlack(
-				banner.width,
-				banner.height,
-			);
+			Animation.blink(maze);
+			AnimationHandler.checkBlinkEnd(banner, logo);
+			return;
+		}
+	}
+
+	static checkBlinkEnd(banner, logo) {
+		let timeoutId = setTimeout(function(){AnimationHandler.checkBlinkEnd(banner, logo);}, 1000);
+		console.log("Checking for end of blinking...");
+		// Cursor blink count
+		if (blinkCounter == 5) {
+			console.log("Start fade out.");
+			clearTimeout(timeoutId);
+			Animation.fadeBlack(banner.width, banner.height);
 			AnimationHandler.checkFadeEnd(
 				logo,
 				banner.width,
@@ -115,19 +115,6 @@ export class AnimationHandler {
 			return;
 		}
 	}
-
-	//static checkCursorEnd(flag) {
-	//let timeoutId = setTimeout(checkCursorEnd, 1000);
-	//console.log("checking for end of blinking...");
-	//// Cursor blink count
-	//if (flag.count == 5) {
-	//console.log("Fade out start");
-	//clearTimeout(timeoutId);
-	//Animation.fadeBlack();
-	//checkFadeEnd();
-	//return;
-	//}
-	//}
 
 	static checkFadeEnd(logo, width, height) {
 		let timeoutId = setTimeout(function () {
@@ -176,24 +163,24 @@ export class Animation {
 			Animation.fadeIn(width, height, color);
 		}, 100);
 	}
-	//blink = () => {
-	//if (this.cursor >= 8) return;
-	//let cursorFill = this.cursor;
-	//let width = this.size / this.columns - 2;
-	//let height = this.size / this.rows - 2;
 
-	//if (cursorFill % 2 == 0) {
-	//ctx.fillStyle = "orange";
-	//ctx.fillRect(1, 1, width, height);
-	//} else {
-	//ctx.fillStyle = "rgba(0, 0, 0, 1)";
-	//ctx.fillRect(1, 1, width, height);
-	//}
+	static blink(maze) {
+		if (blinkCounter >= 8) return;
+		let width = maze.width / Constants.SIZE.columns - Constants.GRID_WIDTH;
+		let height = maze.height / Constants.SIZE.rows - Constants.GRID_WIDTH;
 
-	//this.cursor += 1;
-	//setTimeout(this.blink, 1000);
-	//// flip-flopping opacity values
-	//}
+		// flip-flopping opacity values
+		if (blinkCounter % 2 == 0) {
+			ctx.fillStyle = Constants.PRIMARY_COLOR;
+			ctx.fillRect(Constants.GRID_WIDTH, Constants.GRID_WIDTH, width, height);
+		} else {
+			ctx.fillStyle = "rgba(0, 0, 0, 1)";
+			ctx.fillRect(Constants.GRID_WIDTH, Constants.GRID_WIDTH, width, height);
+		}
+
+		blinkCounter += 1;
+		setTimeout(function(){Animation.blink(maze);}, 1000);
+	}
 
 	// We could make Animation objects that hold params like width, height, opacity etc, so we wouldn't need to pass in arguments ******8
 	static fadeBlack(width, height) {
