@@ -1,7 +1,8 @@
 import Constants from "./constants.js";
-import Banner, { AnimationHandler, Animation } from "./banner.js";
+import Banner from "./banner.js";
+import AnimationHandler from "./animation.js";
 import Maze from "./maze.js";
-import { aspectRatio, logoPlacement, textPlacement } from "./size-helpers.js";
+import { logoPlacement, textPlacement } from "./size-helpers.js";
 const ctx = Constants.CANVAS.getContext("2d");
 
 const primaryGradient = (width, height) => {
@@ -40,5 +41,5 @@ let maze = new Maze(
 banner.initialize();
 maze.initialize();
 
-AnimationHandler.start(text, banner.color);
+AnimationHandler.start(text);
 AnimationHandler.directSequence(banner, maze, logo);
