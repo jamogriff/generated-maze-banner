@@ -263,7 +263,3 @@ class WallRenderer {
 			WallRenderer.hideLeftWall(x, y, h, r);
 	}
 }
-
-class Animations {
-
-}

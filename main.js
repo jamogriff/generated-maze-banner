@@ -1,8 +1,8 @@
-import Constants from "./constants.js";
-import Banner from "./banner.js";
-import AnimationHandler from "./animation.js";
-import Maze from "./maze.js";
-import { logoPlacement, textPlacement } from "./size-helpers.js";
+import Constants from "./scripts/constants.js";
+import Banner from "./scripts/banner.js";
+import AnimationHandler from "./scripts/animation.js";
+import Maze from "./scripts/maze.js";
+import { logoPlacement, textPlacement } from "./scripts/size-helpers.js";
 const ctx = Constants.CANVAS.getContext("2d");
 
 /*
