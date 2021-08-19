@@ -7,15 +7,16 @@ the function in an anon function. But when you do that,
 the scope is high up in window instead of
 staying local in scope, thus everything is a class method.
 */
+let textCounter = 0;
 let firstTrigger = 0;
 let secondTrigger = 0;
-	function saveCanvasState() {
-		let canvas = document.getElementById("banner");
-		let ctx = canvas.getContext("2d");
-		ctx.save();
-	}
+function saveCanvasState() {
+	let canvas = document.getElementById("banner");
+	let ctx = canvas.getContext("2d");
+	ctx.save();
+}
 
-export default class AnimationHandler {
+export class AnimationHandler {
 	/*
 	The main function that checks for end of maze gen
 	and then starts the next animation, which then
@@ -31,8 +32,16 @@ export default class AnimationHandler {
 			console.log("Maze is finished");
 			clearTimeout(timeoutId);
 			// start next animation
-			Animation.fadeBlack(maze.width, maze.height, firstTrigger);
-			AnimationHandler.checkFadeEnd(logo, maze.width, maze.height);
+			Animation.fadeBlack(
+				maze.width,
+				maze.height,
+				firstTrigger
+			);
+			AnimationHandler.checkFadeEnd(
+				logo,
+				maze.width,
+				maze.height
+			);
 			return;
 		}
 	}
@@ -65,7 +74,6 @@ export default class AnimationHandler {
 			return;
 		}
 	}
-
 }
 
 export class Animation {
@@ -87,8 +95,6 @@ export class Animation {
 			Animation.drawLogo(logo, width, height, opacity);
 		}, 100);
 	}
-
-
 
 	//blink = () => {
 	//if (this.cursor >= 8) return;
@@ -126,21 +132,23 @@ export class Animation {
 		}, 100);
 	}
 
-	//typeWriter = () => {
-	//let text = "jamison.codes";
-	//let letters = text.substr(0, this.textCounter) + "\u258B";
-	//ctx.fillStyle = "black";
-	//ctx.fillRect(0, 0, this.size, this.size);
-	//let gradient = ctx.createLinearGradient(0,0,this.size,0);
+	static typeWriter(textObj) {
+		let canvas = document.getElementById("banner");
+		let ctx = canvas.getContext("2d");
+		let text = "node maze-gen.js";
+		let letters = "> " + text.substr(0, textCounter) + "\u258B";
+		ctx.fillStyle = "black";
+		ctx.fillRect(0, 0, textObj.canvasWidth, textObj.canvasHeight);
+		let gradient = ctx.createLinearGradient(0, 0, textObj.canvasWidth/2, 0);
 
-	//gradient.addColorStop(0, 'pink');
-	//gradient.addColorStop(1, 'orange');
-	//ctx.fillStyle = gradient;
-	//ctx.font = "40px serif";
-	//ctx.fillText(letters, this.size/this.columns, this.size/2); // arbitrary location to test
-	//if (this.textCounter<=text.length) {
-	//setTimeout(this.typeWriter, 200),
-	//this.textCounter++
-	//}
-	//}
+		gradient.addColorStop(0, "blue");
+		gradient.addColorStop(1, "pink");
+		ctx.fillStyle = gradient;
+		ctx.font = `${textObj.fontSize}px serif`;
+		ctx.fillText(letters, textObj.x, textObj.y);
+		if (textCounter <= text.length) {
+				setTimeout(function(){Animation.typeWriter(textObj);}, 150);
+			textCounter++;
+		}
+	}
 }

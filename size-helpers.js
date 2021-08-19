@@ -36,3 +36,15 @@ export function logoPlacement(width, height) {
 	};
 	return logo;
 }
+
+export function textPlacement(width, height) {
+	let size = height / 5;
+	let text = {
+		x: 10,
+		y: size + 5,
+		fontSize: size,
+		canvasWidth: width,
+		canvasHeight: height
+	};
+	return text;
+}
