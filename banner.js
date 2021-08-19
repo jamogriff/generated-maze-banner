@@ -7,8 +7,13 @@ the function in an anon function. But when you do that,
 the scope is high up in window instead of
 staying local in scope, thus everything is a class method.
 */
-let opacity = 0;
-let t = 0;
+let firstTrigger = 0;
+let secondTrigger = 0;
+	function saveCanvasState() {
+		let canvas = document.getElementById("banner");
+		let ctx = canvas.getContext("2d");
+		ctx.save();
+	}
 
 export default class AnimationHandler {
 	/*
@@ -26,8 +31,8 @@ export default class AnimationHandler {
 			console.log("Maze is finished");
 			clearTimeout(timeoutId);
 			// start next animation
-			Animation.fadeBlack(maze.width, maze.height, opacity);
-			AnimationHandler.checkFadeEnd(logo);
+			Animation.fadeBlack(maze.width, maze.height, firstTrigger);
+			AnimationHandler.checkFadeEnd(logo, maze.width, maze.height);
 			return;
 		}
 	}
@@ -45,37 +50,45 @@ export default class AnimationHandler {
 	//}
 	//}
 
-	static checkFadeEnd(logo) {
+	static checkFadeEnd(logo, width, height) {
 		let timeoutId = setTimeout(function () {
-			AnimationHandler.checkFadeEnd(logo);
+			AnimationHandler.checkFadeEnd(logo, width, height);
 		}, 1000);
 		console.log("checking for end of fade sequence...");
-		t += 1;
+		secondTrigger += 1;
 		// Basically will just initiate after 3 seconds
-		if (t >= 3) {
+		if (secondTrigger >= 3) {
 			console.log("Logo start");
 			clearTimeout(timeoutId);
-			Animation.drawLogo(logo, 0);
+			saveCanvasState();
+			Animation.drawLogo(logo, width, height, 0);
 			return;
 		}
 	}
+
 }
 
 export class Animation {
-	static drawLogo(logo, opacity) {
-		if (opacity >= 0.44) return;
+	static drawLogo(logo, width, height, opacity) {
+		if (opacity >= 1) return;
 		let canvas = document.getElementById("banner");
 		let ctx = canvas.getContext("2d");
 		let image = document.getElementById("brand");
+		ctx.globalAlpha = 1;
+
+		ctx.fillStyle = "black";
+		ctx.fillRect(0, 0, width, height);
 		opacity += 0.04;
 		ctx.globalAlpha = opacity;
 		ctx.drawImage(image, logo.x, logo.y, logo.width, logo.height);
 		// callback function has to be wrapped in an anonymous function
 		// otherwise the function gets called immediately
 		setTimeout(function () {
-			Animation.drawLogo(logo, opacity);
-		}, 200);
+			Animation.drawLogo(logo, width, height, opacity);
+		}, 100);
 	}
+
+
 
 	//blink = () => {
 	//if (this.cursor >= 8) return;
