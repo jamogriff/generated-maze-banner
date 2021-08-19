@@ -1,16 +1,14 @@
-export const banner = document.querySelector("#banner");
-export const canvas = banner.getContext("2d");
+import Constants from './constants.js';
 
+const ctx = Constants.CANVAS.getContext("2d");
 let currentCell; // will become a Cell object
-const gridWidth = 2; // in pixels
+const gridWidth = Constants.GRID_WIDTH; // in pixels
 const gridOffset = gridWidth / 2;
-const bgColor = "black";
-const primaryColor = "#edcb96";
 const primaryGradient = (width, height) => {
-	let gradient = canvas.createLinearGradient(0, 0, width, height);
-	gradient.addColorStop(0, "#0E0E52"); // midnight blue
-	gradient.addColorStop(0.5, "#FFB8D1"); // cotton candy
-	gradient.addColorStop(1, "#E34234"); // cinnabar
+	let gradient = ctx.createLinearGradient(0, 0, width, height);
+	gradient.addColorStop(0, Constants.GRADIENT_1); // midnight blue
+	gradient.addColorStop(0.5, Constants.GRADIENT_2); // cotton candy
+	gradient.addColorStop(1, Constants.GRADIENT_3); // cinnabar
 	return gradient;
 };
 
@@ -44,8 +42,8 @@ export default class Maze {
 		// Render initial banner background and size
 		banner.width = this.width + gridWidth;
 		banner.height = this.height + gridWidth;
-		canvas.fillStyle = primaryGradient(banner.width, banner.height);
-		canvas.fillRect(0, 0, banner.width, banner.height);
+		ctx.fillStyle = primaryGradient(banner.width, banner.height);
+		ctx.fillRect(0, 0, banner.width, banner.height);
 	}
 
 	draw() {
@@ -74,7 +72,7 @@ export default class Maze {
 
 		// TODO: Add indication animation to indicate backtracking
 		if (neighbor) {
-			currentCell.highlight(this.columns, this.rows, primaryColor);
+			currentCell.highlight(this.columns, this.rows, Constants.PRIMARY_COLOR);
 			this.stack.push(currentCell);
 			currentCell.removeWalls(neighbor);
 			neighbor.params.visited = true;
@@ -82,7 +80,7 @@ export default class Maze {
 			currentCell = neighbor;
 		} else if (this.stack.length > 0) {
 			currentCell = this.stack.pop();
-			currentCell.highlight(this.columns, this.rows, primaryColor);
+			currentCell.highlight(this.columns, this.rows, Constants.PRIMARY_COLOR);
 		}
 
 		if (this.stack.length == 0) {
@@ -119,8 +117,8 @@ class Cell {
 	}
 
 	fill(x, y, rows, columns, fillType) {
-		canvas.fillStyle = fillType;
-		canvas.fillRect(
+		ctx.fillStyle = fillType;
+		ctx.fillRect(
 			x + gridWidth,
 			y + gridWidth,
 			this.mazeWidth / columns - gridWidth,
@@ -131,11 +129,11 @@ class Cell {
 	show(rows, columns) {
 		let x = (this.params.column * this.mazeWidth) / columns;
 		let y = (this.params.row * this.mazeHeight) / rows;
-		canvas.strokeStyle = primaryGradient(
+		ctx.strokeStyle = primaryGradient(
 			this.mazeWidth,
 			this.mazeHeight
 		);
-		canvas.lineWidth = gridWidth;
+		ctx.lineWidth = gridWidth;
 		WallRenderer.renderWalls(
 			this.params.walls,
 			x,
@@ -147,7 +145,7 @@ class Cell {
 		);
 
 		if (this.params.visited)
-			this.fill(x, y, rows, columns, bgColor);
+			this.fill(x, y, rows, columns, Constants.BG_COLOR);
 	}
 
 	// Columns and rows from maze are passed in to set size of cell
@@ -233,41 +231,41 @@ class Cell {
 class WallRenderer {
 	// Wall hiding functions that are used on cells marked 'false
 	static hideTopWall(x, y, width, columns) {
-		canvas.beginPath();
-		canvas.strokeStyle = bgColor;
-		canvas.moveTo(x + gridWidth, y + gridOffset);
-		canvas.lineTo(x + width / columns, y + gridOffset);
-		canvas.stroke();
+		ctx.beginPath();
+		ctx.strokeStyle = Constants.BG_COLOR;
+		ctx.moveTo(x + gridWidth, y + gridOffset);
+		ctx.lineTo(x + width / columns, y + gridOffset);
+		ctx.stroke();
 	}
 
 	static hideBottomWall(x, y, width, height, rows, columns) {
-		canvas.beginPath();
-		canvas.strokeStyle = bgColor;
-		canvas.moveTo(x + gridWidth, gridOffset + y + height / rows);
-		canvas.lineTo(
+		ctx.beginPath();
+		ctx.strokeStyle = Constants.BG_COLOR;
+		ctx.moveTo(x + gridWidth, gridOffset + y + height / rows);
+		ctx.lineTo(
 			x + width / columns,
 			gridOffset + y + height / rows
 		);
-		canvas.stroke();
+		ctx.stroke();
 	}
 
 	static hideRightWall(x, y, width, height, rows, columns) {
-		canvas.beginPath();
-		canvas.strokeStyle = bgColor;
-		canvas.moveTo(x + width / columns + gridOffset, y + gridWidth);
-		canvas.lineTo(
+		ctx.beginPath();
+		ctx.strokeStyle = Constants.BG_COLOR;
+		ctx.moveTo(x + width / columns + gridOffset, y + gridWidth);
+		ctx.lineTo(
 			x + width / columns + gridOffset,
 			y + height / rows
 		);
-		canvas.stroke();
+		ctx.stroke();
 	}
 
 	static hideLeftWall(x, y, height, rows) {
-		canvas.beginPath();
-		canvas.strokeStyle = bgColor;
-		canvas.moveTo(x + gridOffset, y + gridWidth);
-		canvas.lineTo(x + gridOffset, y + height / rows);
-		canvas.stroke();
+		ctx.beginPath();
+		ctx.strokeStyle = Constants.BG_COLOR;
+		ctx.moveTo(x + gridOffset, y + gridWidth);
+		ctx.lineTo(x + gridOffset, y + height / rows);
+		ctx.stroke();
 	}
 
 	// Walls render as hidden depending on boolean status in Cell object
