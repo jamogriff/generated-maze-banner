@@ -1,3 +1,4 @@
+import Constants from "./constants.js";
 /*
 Used for animation flags, not ideal but
 Object oriented approach is wonky with
@@ -8,38 +9,96 @@ the scope is high up in window instead of
 staying local in scope, thus everything is a class method.
 */
 let textCounter = 0;
-let firstTrigger = 0;
-let secondTrigger = 0;
-const canvas = document.getElementById("banner");
-const ctx = canvas.getContext("2d");
+let timeCheck1 = 0;
+let opacityCheck1 = 0;
+let timeCheck2 = 0;
+let opacityCheck2 = 0;
+
+const ctx = Constants.CANVAS.getContext("2d");
 
 export default class Banner {
-	constructor(context, width, height) {
+	constructor(context, width, height, gradient) {
 		this.ctx = context;
 		this.width = width;
 		this.height = height;
+		this.color = gradient;
+	}
+
+	initialize() {
+		banner.width = this.width;
+		banner.height = this.height;
 	}
 
 	draw(color) {
-		banner.width = this.width;
-		banner.height = this.height;
 		ctx.fillStyle = color;
 		ctx.fillRect(0, 0, banner.width, banner.height);
 	}
 }
 
 export class AnimationHandler {
+	static start(text, color) {
+		Animation.typeWriter(text, color);
+	}
 	/*
 	The main function that checks for end of maze gen
 	and then starts the next animation, which then
 	cascades onto the next check and so on
 	*/
-	static checkSequence(banner, maze, logo) {
+	static directSequence(banner, maze, logo) {
 		let timeoutId = setTimeout(function () {
-			AnimationHandler.checkSequence(banner, maze, logo);
+			AnimationHandler.directSequence(
+				banner,
+				maze,
+				logo
+			);
+		}, 2000);
+		console.log("Waiting for end of text animation...");
+		timeCheck1 += 1;
+		if (timeCheck1 >= 3) {
+			console.log("Text is finished");
+			clearTimeout(timeoutId);
+			// start next animation
+			Animation.fadeIn(
+				banner.width,
+				banner.height,
+				banner.color,
+			);
+			AnimationHandler.checkFadeIn(
+				banner,
+				maze,
+				logo
+			);
+			return;
+		}
+	}
+
+	static checkFadeIn(banner, maze, logo) {
+		let timeoutId = setTimeout(function () {
+			AnimationHandler.checkFadeIn(banner, maze, logo);
+		}, 1000);
+		console.log("Checking for end of fade in sequence...");
+
+		// Basically will just initiate after 3 seconds
+		if (opacityCheck1 >= .6) {
+			console.log("Maze start");
+			clearTimeout(timeoutId);
+			ctx.globalAlpha = 1;
+			banner.draw(banner.color);
+			maze.draw();
+			AnimationHandler.checkMazeEnd(banner, maze, logo);
+			return;
+		}
+	}
+	static checkMazeEnd(banner, maze, logo) {
+		let timeoutId = setTimeout(function () {
+			AnimationHandler.checkMazeEnd(
+				banner,
+				maze,
+				logo
+			);
 		}, 3000);
 		let flag = maze.complete;
-		console.log("checking for end of animation...");
+		console.log("Checking for end of animation...");
 		if (flag == true) {
 			console.log("Maze is finished");
 			clearTimeout(timeoutId);
@@ -47,7 +106,6 @@ export class AnimationHandler {
 			Animation.fadeBlack(
 				banner.width,
 				banner.height,
-				firstTrigger
 			);
 			AnimationHandler.checkFadeEnd(
 				logo,
@@ -76,9 +134,9 @@ export class AnimationHandler {
 			AnimationHandler.checkFadeEnd(logo, width, height);
 		}, 1000);
 		console.log("checking for end of fade sequence...");
-		secondTrigger += 1;
+		timeCheck2 += 1;
 		// Basically will just initiate after 3 seconds
-		if (secondTrigger >= 3) {
+		if (timeCheck2 >= 3) {
 			console.log("Logo start");
 			clearTimeout(timeoutId);
 			Animation.drawLogo(logo, width, height, 0);
@@ -105,6 +163,19 @@ export class Animation {
 		}, 100);
 	}
 
+	static fadeIn(width, height, color) {
+		// each opacity layer is additive, so we only wait
+		// until .3 or so so have a black screen
+		if (opacityCheck1 >= 0.6) return;
+		opacityCheck1 += 0.04;
+		ctx.globalAlpha = opacityCheck1;
+		ctx.fillStyle = color;
+		ctx.fillRect(0, 0, width, height);
+		opacityCheck1 += 0.01;
+		setTimeout(function () {
+			Animation.fadeIn(width, height, color);
+		}, 100);
+	}
 	//blink = () => {
 	//if (this.cursor >= 8) return;
 	//let cursorFill = this.cursor;
@@ -125,38 +196,30 @@ export class Animation {
 	//}
 
 	// We could make Animation objects that hold params like width, height, opacity etc, so we wouldn't need to pass in arguments ******8
-	static fadeBlack(width, height, opacity) {
+	static fadeBlack(width, height) {
 		// each opacity layer is additive, so we only wait
 		// until .3 or so so have a black screen
-		if (opacity >= 0.3) return;
-		ctx.fillStyle = `rgba(0, 0, 0, ${opacity}`;
+		if (opacityCheck2 >= 0.3) return;
+		ctx.fillStyle = `rgba(0, 0, 0, ${opacityCheck2}`;
 		ctx.fillRect(0, 0, width, height);
-		opacity += 0.01;
+		opacityCheck2 += 0.01;
 		setTimeout(function () {
-			Animation.fadeBlack(width, height, opacity);
+			Animation.fadeBlack(width, height);
 		}, 100);
 	}
 
-	static typeWriter(textObj) {
+	static typeWriter(textObj, color) {
 		let text = "node maze-gen.js";
 		let letters = "> " + text.substr(0, textCounter) + "\u258B";
-		ctx.fillStyle = "black";
+		ctx.fillStyle = Constants.BG_COLOR;
 		ctx.fillRect(0, 0, textObj.canvasWidth, textObj.canvasHeight);
-		let gradient = ctx.createLinearGradient(
-			0,
-			0,
-			textObj.canvasWidth / 2,
-			0
-		);
 
-		gradient.addColorStop(0, "blue");
-		gradient.addColorStop(1, "pink");
-		ctx.fillStyle = gradient;
+		ctx.fillStyle = color;
 		ctx.font = `${textObj.fontSize}px serif`;
 		ctx.fillText(letters, textObj.x, textObj.y);
 		if (textCounter <= text.length) {
 			setTimeout(function () {
-				Animation.typeWriter(textObj);
+				Animation.typeWriter(textObj, color);
 			}, 150);
 			textCounter++;
 		}
