@@ -10,10 +10,22 @@ staying local in scope, thus everything is a class method.
 let textCounter = 0;
 let firstTrigger = 0;
 let secondTrigger = 0;
-function saveCanvasState() {
-	let canvas = document.getElementById("banner");
-	let ctx = canvas.getContext("2d");
-	ctx.save();
+const canvas = document.getElementById("banner");
+const ctx = canvas.getContext("2d");
+
+export default class Banner {
+	constructor(context, width, height) {
+		this.ctx = context;
+		this.width = width;
+		this.height = height;
+	}
+
+	draw(color) {
+		banner.width = this.width;
+		banner.height = this.height;
+		ctx.fillStyle = color;
+		ctx.fillRect(0, 0, banner.width, banner.height);
+	}
 }
 
 export class AnimationHandler {
@@ -22,9 +34,9 @@ export class AnimationHandler {
 	and then starts the next animation, which then
 	cascades onto the next check and so on
 	*/
-	static checkSequence(maze, logo) {
+	static checkSequence(banner, maze, logo) {
 		let timeoutId = setTimeout(function () {
-			AnimationHandler.checkSequence(maze, logo);
+			AnimationHandler.checkSequence(banner, maze, logo);
 		}, 3000);
 		let flag = maze.complete;
 		console.log("checking for end of animation...");
@@ -33,14 +45,14 @@ export class AnimationHandler {
 			clearTimeout(timeoutId);
 			// start next animation
 			Animation.fadeBlack(
-				maze.width,
-				maze.height,
+				banner.width,
+				banner.height,
 				firstTrigger
 			);
 			AnimationHandler.checkFadeEnd(
 				logo,
-				maze.width,
-				maze.height
+				banner.width,
+				banner.height
 			);
 			return;
 		}
@@ -69,7 +81,6 @@ export class AnimationHandler {
 		if (secondTrigger >= 3) {
 			console.log("Logo start");
 			clearTimeout(timeoutId);
-			saveCanvasState();
 			Animation.drawLogo(logo, width, height, 0);
 			return;
 		}
@@ -79,8 +90,6 @@ export class AnimationHandler {
 export class Animation {
 	static drawLogo(logo, width, height, opacity) {
 		if (opacity >= 1) return;
-		let canvas = document.getElementById("banner");
-		let ctx = canvas.getContext("2d");
 		let image = document.getElementById("brand");
 		ctx.globalAlpha = 1;
 
@@ -117,12 +126,8 @@ export class Animation {
 
 	// We could make Animation objects that hold params like width, height, opacity etc, so we wouldn't need to pass in arguments ******8
 	static fadeBlack(width, height, opacity) {
-		// we can put this somewhere else, but for now:
-		let banner = document.getElementById("banner");
-		let ctx = banner.getContext("2d");
-
 		// each opacity layer is additive, so we only wait
-		// until .6 or so so have a black screen
+		// until .3 or so so have a black screen
 		if (opacity >= 0.3) return;
 		ctx.fillStyle = `rgba(0, 0, 0, ${opacity}`;
 		ctx.fillRect(0, 0, width, height);
@@ -133,13 +138,16 @@ export class Animation {
 	}
 
 	static typeWriter(textObj) {
-		let canvas = document.getElementById("banner");
-		let ctx = canvas.getContext("2d");
 		let text = "node maze-gen.js";
 		let letters = "> " + text.substr(0, textCounter) + "\u258B";
 		ctx.fillStyle = "black";
 		ctx.fillRect(0, 0, textObj.canvasWidth, textObj.canvasHeight);
-		let gradient = ctx.createLinearGradient(0, 0, textObj.canvasWidth/2, 0);
+		let gradient = ctx.createLinearGradient(
+			0,
+			0,
+			textObj.canvasWidth / 2,
+			0
+		);
 
 		gradient.addColorStop(0, "blue");
 		gradient.addColorStop(1, "pink");
@@ -147,7 +155,9 @@ export class Animation {
 		ctx.font = `${textObj.fontSize}px serif`;
 		ctx.fillText(letters, textObj.x, textObj.y);
 		if (textCounter <= text.length) {
-				setTimeout(function(){Animation.typeWriter(textObj);}, 150);
+			setTimeout(function () {
+				Animation.typeWriter(textObj);
+			}, 150);
 			textCounter++;
 		}
 	}

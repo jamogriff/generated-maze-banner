@@ -1,7 +1,7 @@
 import Constants from './constants.js';
 
-const ctx = Constants.CANVAS.getContext("2d");
 let currentCell; // will become a Cell object
+const ctx = Constants.CANVAS.getContext("2d");
 const gridWidth = Constants.GRID_WIDTH; // in pixels
 const gridOffset = gridWidth / 2;
 const primaryGradient = (width, height) => {
@@ -38,12 +38,6 @@ export default class Maze {
 		// Initialize starting cell and stack for maze generation
 		currentCell = this.grid[0][0]; // node at top right
 		currentCell.params.visited = true;
-
-		// Render initial banner background and size
-		banner.width = this.width + gridWidth;
-		banner.height = this.height + gridWidth;
-		ctx.fillStyle = primaryGradient(banner.width, banner.height);
-		ctx.fillRect(0, 0, banner.width, banner.height);
 	}
 
 	draw() {
