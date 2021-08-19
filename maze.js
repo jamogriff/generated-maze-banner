@@ -4,13 +4,6 @@ let currentCell; // will become a Cell object
 const ctx = Constants.CANVAS.getContext("2d");
 const gridWidth = Constants.GRID_WIDTH; // in pixels
 const gridOffset = gridWidth / 2;
-const primaryGradient = (width, height) => {
-	let gradient = ctx.createLinearGradient(0, 0, width, height);
-	gradient.addColorStop(0, Constants.GRADIENT_1); // midnight blue
-	gradient.addColorStop(0.5, Constants.GRADIENT_2); // cotton candy
-	gradient.addColorStop(1, Constants.GRADIENT_3); // cinnabar
-	return gradient;
-};
 
 export default class Maze {
 	constructor(x, y, rows, columns) {
@@ -123,10 +116,6 @@ class Cell {
 	show(rows, columns) {
 		let x = (this.params.column * this.mazeWidth) / columns;
 		let y = (this.params.row * this.mazeHeight) / rows;
-		ctx.strokeStyle = primaryGradient(
-			this.mazeWidth,
-			this.mazeHeight
-		);
 		ctx.lineWidth = gridWidth;
 		WallRenderer.renderWalls(
 			this.params.walls,
