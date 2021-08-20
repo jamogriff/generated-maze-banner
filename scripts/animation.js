@@ -120,7 +120,7 @@ export class Animation {
 		let image = document.getElementById("brand");
 		ctx.globalAlpha = 1;
 
-		ctx.fillStyle = "black";
+		ctx.fillStyle = Constants.BG_COLOR;
 		ctx.fillRect(0, 0, width, height);
 		opacity += 0.04;
 		ctx.globalAlpha = opacity;
@@ -165,7 +165,7 @@ export class Animation {
 				height
 			);
 		} else {
-			ctx.fillStyle = "rgba(0, 0, 0, 1)";
+			ctx.fillStyle = Constants.BG_COLOR;
 			ctx.fillRect(
 				Constants.GRID_WIDTH,
 				Constants.GRID_WIDTH,
